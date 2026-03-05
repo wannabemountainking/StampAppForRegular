@@ -10,11 +10,22 @@ import SwiftUI
 
 // 상세 보기 화면
 struct UserDetailView: View {
+    @Environment(\.horizontalSizeClass) var deviceSize
+    @ObservedObject var vm: StampViewModel
+    
+    private var isiPhone: Bool { deviceSize == .compact }
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        NavigationStack {
+            if isiPhone {
+                
+            } else {
+                
+            }
+        }
     }
 }
 
 #Preview {
-    UserDetailView()
+    UserDetailView(vm: StampViewModel(provider: StampProvider.shared))
 }
