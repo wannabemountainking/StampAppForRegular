@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import CoreData
+internal import CoreData
 
 
 // Core Data 환경 관리 (싱글톤)
@@ -26,7 +26,7 @@ final class StampProvider {
     
     private init() {
         container = NSPersistentContainer(name: "CoffeeStamp")
-        viewContext.automaticallyMergesChangesFromParent = true
+        self.viewContext.automaticallyMergesChangesFromParent = true
         container.loadPersistentStores { description, error in
             if let error {
                 print("Error On Core Data Loading: \(error)")

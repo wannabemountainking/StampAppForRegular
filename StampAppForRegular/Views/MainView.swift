@@ -11,15 +11,15 @@ import SwiftUI
 struct MainView: View {
     
     @FetchRequest(fetchRequest: Stamp.all()) var stamps
-    @EnvironmentObject var vm: StampViewModel
+//    @EnvironmentObject var vm: StampViewModel
     let provider = StampProvider.shared
     
     @State var stampToEdit: Stamp?
-    @State var isFav: Bool = false
+    @State var isFilteringByFav: Bool = false
     
-//    @State var favConfig: FavConfig
-//    @State var sort: Sort
-//    @State var isAsc: Bool
+    @State var favConfig: FavConfig = .init()
+    @State var sort: Sort = .asc
+    @State var isAsc: Bool = false
     
     var body: some View {
         NavigationSplitView {
@@ -84,10 +84,16 @@ struct MainView: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        // TODO: favorite Action
-                        
+//                         TODO: favorite Action
+                        if isFilteringByFav {
+                            favConfig.filter = FavConfig.Filter.all
+                            isFilteringByFav.toggle()
+                        } else {
+                            favConfig.filter = FavConfig.Filter.favorites
+                            isFilteringByFav.toggle()
+                        }
                     } label: {
-                        Image(systemName: "star.fill")
+                        Image(systemName: isFilteringByFav ? "star.fill" : "star")
                             .font(.title2)
                             .foregroundStyle(.yellow)
                     }
@@ -96,8 +102,15 @@ struct MainView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         // TODO: Sort Action
+                        if isAsc {
+                            sort = Sort.asc
+                            isAsc.toggle()
+                        } else {
+                            sort = Sort.dec
+                            isAsc.toggle()
+                        }
                     } label: {
-                        Image(systemName: "arrow.down")
+                        Image(systemName: isAsc ? "arrow.up" : "arrow.down")
                             .font(.title2)
                             .foregroundStyle(.mint)
                     }
@@ -111,12 +124,29 @@ struct MainView: View {
                     CreateUserView(vm: .init(provider: provider, stamp: stamp))
                 }
             }// .sheet
+            .onChange(of: favConfig) { oldValue, newFav in
+                stamps.nsPredicate = Stamp.favFilter(config: newFav)
+            }
+            .onChange(of: sort) { oldValue, newSort in
+                stamps.nsSortDescriptors = Stamp.sort(order: newSort)
+            }
+            .onChange(of: stamps.map { $0.name + $0.company }) { _, _ in
+                print("stamps changed")
+            }
 
         } detail: {
         } //: NavigationSplitView
     }// : body
 }
 
-#Preview {
-    MainView()
+extension MainView {
+    struct ListView: View {
+        var body: some View {
+            /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Hello, world!@*/Text("Hello, world!")/*@END_MENU_TOKEN@*/
+        }
+    }
 }
+
+//#Preview {
+//    MainView()
+//}

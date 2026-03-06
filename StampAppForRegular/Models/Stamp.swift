@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import CoreData
+internal import CoreData
 
 // NSManagedObject 모델 + 확장
 final class Stamp: NSManagedObject, Identifiable {

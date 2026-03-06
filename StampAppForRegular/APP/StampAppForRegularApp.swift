@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import CoreData
+internal import CoreData
 
 
 // @main 진입점
@@ -17,7 +17,7 @@ struct StampAppForRegularApp: App {
         WindowGroup {
             MainView()
                 .environment(\.managedObjectContext, StampProvider.shared.viewContext)
-                .environmentObject(vm)
+//                .environmentObject(vm)
         }
     }
 }
