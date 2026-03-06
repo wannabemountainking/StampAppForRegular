@@ -12,7 +12,7 @@ internal import CoreData
 // @main 진입점
 @main
 struct StampAppForRegularApp: App {
-    @StateObject var vm: StampViewModel = .init(provider: StampProvider.shared)
+//    @StateObject var vm: StampViewModel = .init(provider: StampProvider.shared)
     var body: some Scene {
         WindowGroup {
             MainView()

@@ -33,25 +33,11 @@ final class StampViewModel: ObservableObject {
             self.context = provider.newContext
             self.stamp = Stamp(context: self.context)
             self.isNew = true
-            NotificationCenter.default.addObserver(
-                forName: .NSManagedObjectContextDidSave,
-                object: self.context,
-                queue: .main
-            ) { noti in
-                guard let changes = noti.userInfo else {return}
-                NSManagedObjectContext.mergeChanges(
-                    fromRemoteContextSave: changes,
-                    into: [provider.viewContext]
-                )
-            }
         }
     }
     
     // create, edit 시 저장할 때
     func viewModelSave() throws {
-//        print("context: \(context)")
-//        print("viewContext: \(provider.viewContext)")
-//        print("hasChanges: \(context.hasChanges)")
         if context.hasChanges {
             objectWillChange.send()
             try context.save()

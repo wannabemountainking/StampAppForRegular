@@ -11,7 +11,7 @@ import SwiftUI
 struct MainView: View {
     
     @FetchRequest(fetchRequest: Stamp.all()) var stamps
-//    @EnvironmentObject var vm: StampViewModel
+    @EnvironmentObject var vm: StampViewModel
     let provider = StampProvider.shared
     
     @State var stampToEdit: Stamp?
@@ -28,93 +28,23 @@ struct MainView: View {
                 if stamps.isEmpty {
                     NoUserView()
                 } else {
-                    List {
-                        ForEach(stamps) { stamp in
-                            NavigationLink {
-                                //destination
-                                UserDetailView(vm: .init(provider: provider, stamp: stamp))
-                            } label: {
-                                StampRowView(vm: .init(provider: provider, stamp: stamp))
-                                    .swipeActions(edge: .leading, allowsFullSwipe: false) {
-                                        Button {
-                                            // TODO: Delete Action
-                                            do {
-                                                try provider.delete(stamp: stamp, context: provider.viewContext)
-                                            } catch {
-                                                print("Error Deleting Stamp: \(error)")
-                                            }
-                                        } label: {
-                                            Label("Delete", systemImage: "trash")
-                                                .background(Color.red)
-                                        }
-                                    }
-                                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                        Button {
-                                            // TODO: stampToEdit에 해당 Stamp 넣기
-                                            stampToEdit = stamp
-                                        } label: {
-                                            Label("Edit", systemImage: "pencil.and.scribble")
-                                        }
-                                    }
-                            }
-                            
-                        } //:NAVIGATION LINK
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(
-                            RoundedRectangle(cornerRadius: 20)
-                                .fill(Color.accentColor.opacity(0.3))
-                                .padding(.vertical, 5)
-                        )
-                    } //:LOOP
-                } //:LIST
+                    ListView(
+                        stamps: stamps,
+                        provider: provider,
+                        stampToEdit: $stampToEdit
+                    )
+                }
             } //:ZSTACK
             .navigationTitle("Coffee Stamp")
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        //action
-                        //TODO: Add Action
-                        stampToEdit = Stamp.empty(context: provider.newContext)
-                    } label: {
-                        Image(systemName: "plus")
-                            .symbolVariant(.circle)
-                            .font(.title2)
-                    }
-                }
-                
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-//                         TODO: favorite Action
-                        if isFilteringByFav {
-                            favConfig.filter = FavConfig.Filter.all
-                            isFilteringByFav.toggle()
-                        } else {
-                            favConfig.filter = FavConfig.Filter.favorites
-                            isFilteringByFav.toggle()
-                        }
-                    } label: {
-                        Image(systemName: isFilteringByFav ? "star.fill" : "star")
-                            .font(.title2)
-                            .foregroundStyle(.yellow)
-                    }
-                }
-                
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        // TODO: Sort Action
-                        if isAsc {
-                            sort = Sort.asc
-                            isAsc.toggle()
-                        } else {
-                            sort = Sort.dec
-                            isAsc.toggle()
-                        }
-                    } label: {
-                        Image(systemName: isAsc ? "arrow.up" : "arrow.down")
-                            .font(.title2)
-                            .foregroundStyle(.mint)
-                    }
-                }
+                StampToolbar(
+                    provider: provider,
+                    stampToEdit: $stampToEdit,
+                    isFilteringByFav: $isFilteringByFav,
+                    favConfig: $favConfig,
+                    isAsc: $isAsc,
+                    sort: $sort
+                )
             }// .toolbar
             .sheet(item: $stampToEdit) {
                 // dismiss
@@ -138,14 +68,109 @@ struct MainView: View {
         } //: NavigationSplitView
     }// : body
 }
-
+    
 extension MainView {
+    
     struct ListView: View {
+        let stamps: FetchedResults<Stamp>
+        let provider: StampProvider
+        @Binding var stampToEdit: Stamp?
+        
         var body: some View {
-            /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Hello, world!@*/Text("Hello, world!")/*@END_MENU_TOKEN@*/
+            List {
+                ForEach(stamps) { stamp in
+                    NavigationLink {
+                        //destination
+                        UserDetailView(vm: .init(provider: provider, stamp: stamp))
+                    } label: {
+                        StampRowView(stamp: stamp, provider: provider)
+                            .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                                Button {
+                                    // TODO: Delete Action
+                                    do {
+                                        try provider.delete(stamp: stamp, context: provider.viewContext)
+                                    } catch {
+                                        print("Error Deleting Stamp: \(error)")
+                                    }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                        .background(Color.red)
+                                }
+                            }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button {
+                                    // TODO: stampToEdit에 해당 Stamp 넣기
+                                    stampToEdit = stamp
+                                } label: {
+                                    Label("Edit", systemImage: "pencil.and.scribble")
+                                }
+                            }
+                    }
+                    
+                } //:NAVIGATION LINK
+                .listRowSeparator(.hidden)
+                .listRowBackground(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color.accentColor.opacity(0.3))
+                        .padding(.vertical, 5)
+                )
+            } //:LOOP
+        } //:LIST
+    }// : ListView
+    
+    struct StampToolbar: ToolbarContent {
+        
+        let provider: StampProvider
+        @Binding var stampToEdit: Stamp?
+        @Binding var isFilteringByFav: Bool
+        @Binding var favConfig: FavConfig
+        @Binding var isAsc: Bool
+        @Binding var sort: Sort
+        
+        var body: some ToolbarContent {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    //action
+                    //TODO: Add Action
+                    stampToEdit = Stamp.empty(context: provider.newContext)
+                } label: {
+                    Image(systemName: "plus")
+                        .symbolVariant(.circle)
+                        .font(.title2)
+                }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+//                         TODO: favorite Action
+                    favConfig.filter = isFilteringByFav ? .all : .favorites
+                    isFilteringByFav.toggle()
+
+                } label: {
+                    Image(systemName: isFilteringByFav ? "star.fill" : "star")
+                        .font(.title2)
+                        .foregroundStyle(.yellow)
+                }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    // TODO: Sort Action
+                    if isAsc {
+                        sort = Sort.asc
+                        isAsc.toggle()
+                    } else {
+                        sort = Sort.dec
+                        isAsc.toggle()
+                    }
+                } label: {
+                    Image(systemName: isAsc ? "arrow.up" : "arrow.down")
+                        .font(.title2)
+                        .foregroundStyle(.mint)
+                }
+            }
         }
     }
 }
+    
 
 //#Preview {
 //    MainView()
