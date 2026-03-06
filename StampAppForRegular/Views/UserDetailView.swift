@@ -10,17 +10,45 @@ import SwiftUI
 
 // 상세 보기 화면
 struct UserDetailView: View {
-    @Environment(\.horizontalSizeClass) var deviceSize
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @ObservedObject var vm: StampViewModel
     
-    private var isiPhone: Bool { deviceSize == .compact }
+    var isiPhone: Bool { horizontalSizeClass == .compact }
     
     var body: some View {
         NavigationStack {
-            if isiPhone {
-                
-            } else {
-                
+            List {
+                Section {
+                    //content
+                    Text(isiPhone ? "아이폰" : "아이패드")
+                } header: {
+                    Text("Device")
+                }
+
+                if isiPhone {
+                    Section("General") {
+                        LabeledContent {
+                            //content
+                            Text(vm.stamp.name)
+                        } label: {
+                            Text("Name")
+                        }
+                        
+                        LabeledContent {
+                            Text(vm.stamp.company)
+                        } label: {
+                            Text("Company")
+                        }
+                        
+                        LabeledContent {
+                            Text("\(vm.stamp.totalFreeCoffee)")
+                        } label: {
+                            Text("Total Free")
+                        }
+                    }
+                } else {
+                    
+                }
             }
         }
     }
