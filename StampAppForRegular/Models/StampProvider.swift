@@ -26,7 +26,7 @@ final class StampProvider {
     
     private init() {
         container = NSPersistentContainer(name: "CoffeeStamp")
-        self.viewContext.automaticallyMergesChangesFromParent = true
+//        self.viewContext.automaticallyMergesChangesFromParent = true
         container.loadPersistentStores { description, error in
             if let error {
                 print("Error On Core Data Loading: \(error)")
